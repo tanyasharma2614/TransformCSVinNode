@@ -1,65 +1,37 @@
-const main = require('./ans')
-const readline = require('readline');
-const { Readable, Writable} = require('stream');
+const {readAndPrintCSV, fileExists} = require('./main');
+const fs=require('fs');
 
-describe('Main function',()=>{
-    let originaInput;
-    let originalOutput;
-    let mockInput;
-    let mockOutput;
+describe('Main Function',()=>{
 
-    beforeEach(()=>{
-        originaInput=process.stdin;
-        originalOutput=process.stdout;
+  it('should handle an empty CSV file',(done)=>{
+    fs.writeFileSync('empty.csv','');
+    const consoleErrorSpy=spyOn(console,'error').and.callThrough();
+    readAndPrintCSV('empty.csv');
+    setTimeout(()=>{
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error: The CSV file is empty.');
+      fs.unlinkSync('empty.csv');
+      done();
+    },1000);
+  });
 
-        mockInput=new Readable();
-        mockInput._read=()=>{};;
-        mockOutput=new Writable();
-        mockOutput._write=(chunk,encoding, callback)=>{
-            callback();
-        }
-        process.stdin=mockInput;
-        process.stdout=mockOutput;
-    });
+  it('should handle a non-existent CSV file',(done)=>{
+    const invalidFilePath='doesnotexist.csv';
+    const exists=fileExists(invalidFilePath);
+    setTimeout(()=>{
+      expect(exists).toBe(false);
+      done();
+    },1000);
+});
 
-    afterEach(()=>{
-        process.stdin=originaInput;
-        process.stdout=originalOutput;
-    });
+it('should handle CSV files with mismatched columns(invalid CSV)',(done)=>{
+  fs.writeFileSync('invalid.csv','Header1,Header2\nValue1\n');
+  const consoleErrorSpy=spyOn(console,'error').and.callThrough();
+  readAndPrintCSV('invalid.csv');
+  setTimeout(()=>{
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error: Mismatched columns in the CSV file.');
+    fs.unlinkSync('invalid.csv');
+    done();
+  },1000);
+});
 
-    it('should handle user input when using default file',()=>{
-        const input='yes\n';
-        mockInput.push(input);
-        mockInput.push(null);
-        spyOn(console,'log');
-        main();
-        setTimeout(()=>{
-            expect(console.log).toHaveBeenCalledWith('Using default file:data.csv');
-            done();
-        },100);
-    });
-
-    it('should handle user input when using custom file',()=>{
-        const input='no\nmycustomfile.csv\n';
-        mockInput.push(input);
-        mockInput.push(null);
-        spyOn(console,'log');
-        main();
-        setTimeout(()=>{
-            expect(console.log).toHaveBeenCalledWith('Using custom file:mycustomefile.csv')
-            done();
-        },100);
-    });
-
-    it('should handle invalid user input',()=>{
-        const input='invalid\n';
-        mockInput.push(input);
-        mockInput.push(null);
-        spyOn(console,'log');
-        main();
-        setTimeout(()=>{
-            expect(console.log).toHaveBeenCalledWith('Invalid input. Please enter "yes" or "no".');
-            done();
-        },100);
-    });
-})
+});
