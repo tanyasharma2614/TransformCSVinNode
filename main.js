@@ -36,6 +36,12 @@ function evaluateFormula(formula,spreadsheet){
         return evaluateSum(startColIndex,startRowIndex,endColIndex,endRowIndex,spreadsheet);
       case 'AVERAGE':
         return evaluateAverage(startColIndex,startRowIndex,endColIndex,endRowIndex,spreadsheet);
+      case 'COUNT':
+        return evaluateCount(startColIndex,startRowIndex,endColIndex,endRowIndex,spreadsheet);
+      case 'MAX':
+        return evaluateMax(startColIndex,startRowIndex,endColIndex,endRowIndex,spreadsheet);
+      case 'MIN':
+        return evaluateMin(startColIndex,startRowIndex,endColIndex,endRowIndex,spreadsheet);
       default:
         return 'Formula not supported';
     }
@@ -73,6 +79,47 @@ function evaluateAverage(startColIndex,startRowIndex,endColIndex,endRowIndex,spr
   if(count===0)
     return 0;
   return sum/count;
+}
+
+function evaluateCount(startColIndex,startRowIndex,endColIndex,endRowIndex,spreadsheet){
+  let count=0;
+  for(let colIndex=startColIndex;colIndex<=endColIndex;colIndex++){
+    for(let rowIndex=startRowIndex;rowIndex<=endRowIndex;rowIndex++){
+      const cellReference=String.fromCharCode('A'.charCodeAt(0)+colIndex)+(rowIndex+1);
+      const cellValue=spreadsheet.get(cellReference);
+      if(cellValue!=undefined)
+        count++;
+    }
+  }
+  return count;
+}
+
+function evaluateMax(startColIndex,startRowIndex,endColIndex,endRowIndex,spreadsheet){
+  let max=-Infinity;
+  for(let colIndex=startColIndex;colIndex<=endColIndex;colIndex++){
+    for(let rowIndex=startRowIndex;rowIndex<=endRowIndex;rowIndex++){
+      const cellReference=String.fromCharCode('A'.charCodeAt(0)+colIndex)+(rowIndex+1);
+      const cellValue=spreadsheet.get(cellReference);
+      if(cellValue!==undefined && !isNaN(parseFloat(cellValue))){
+        max=Math.max(max,parseFloat(cellValue));
+      }
+    }
+  }
+  return max;
+}
+
+function evaluateMin(startColIndex,startRowIndex,endColIndex,endRowIndex,spreadsheet){
+  let min=Infinity;
+  for(let colIndex=startColIndex;colIndex<=endColIndex;colIndex++){
+    for(let rowIndex=startRowIndex;rowIndex<=endRowIndex;rowIndex++){
+      const cellReference=String.fromCharCode('A'.charCodeAt(0)+colIndex)+(rowIndex+1);
+      const cellValue=spreadsheet.get(cellReference);
+      if(cellValue!==undefined && !isNaN(parseFloat(cellValue))){
+        min=Math.min(min,parseFloat(cellValue));
+      }
+    }
+  }
+  return min;
 }
 
 // Main Function to read and print the CSV file
