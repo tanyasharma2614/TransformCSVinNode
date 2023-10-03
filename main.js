@@ -105,6 +105,8 @@ function evaluateMax(startColIndex,startRowIndex,endColIndex,endRowIndex,spreads
       }
     }
   }
+  if(max===-Infinity)
+  return 0;
   return max;
 }
 
@@ -119,6 +121,8 @@ function evaluateMin(startColIndex,startRowIndex,endColIndex,endRowIndex,spreads
       }
     }
   }
+  if(min===Infinity)
+  return 0;
   return min;
 }
 

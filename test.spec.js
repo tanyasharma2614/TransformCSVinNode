@@ -190,49 +190,103 @@ describe('Main Function',()=>{
     done();
   })
 
-it('should correctly calculate the sum of single cell',(done)=>{
-  const formula='=SUM(A1:A1)';
-  const spreadsheet=new Map([
-    ['A1', '42'],
-  ]);
-  const result=evaluateFormula(formula,spreadsheet);
-  expect(result).toBe(42);
-  done();
-});
+  it('should correctly calculate the sum of single cell',(done)=>{
+    const formula='=SUM(A1:A1)';
+    const spreadsheet=new Map([
+      ['A1', '42'],
+    ]);
+    const result=evaluateFormula(formula,spreadsheet);
+    expect(result).toBe(42);
+    done();
+  });
 
-it('should correctly calculate the average of a single cell',(done)=>{
-  const formula='=AVERAGE(A2:A2)';
-  const spreadsheet=new Map([
-    ['A2', '25'],
-  ]);
-  const result=evaluateFormula(formula,spreadsheet);
-  expect(result).toBe(25);
-  done();
-});
+  it('should correctly calculate the average of a single cell',(done)=>{
+    const formula='=AVERAGE(A2:A2)';
+    const spreadsheet=new Map([
+      ['A2', '25'],
+    ]);
+    const result=evaluateFormula(formula,spreadsheet);
+    expect(result).toBe(25);
+    done();
+  });
 
-it('should correctly calculate sum of empty cells as 0',(done)=>{
-  const formula='=SUM(A1:A3)';
-  const spreadsheet=new Map([
-    ['A1', ''],
-    ['A2', ''],
-    ['A3', ''], 
-  ]);
-  const result=evaluateFormula(formula,spreadsheet);
-  expect(result).toBe(0);
-  done();
-});
+  it('should correctly calculate the count of a single cell',(done)=>{
+    const formula='=COUNT(A2:A2)';
+    const spreadsheet=new Map([
+      ['A2', '25'],
+    ]);
+    const result=evaluateFormula(formula,spreadsheet);
+    expect(result).toBe(1);
+    done();
+  });
 
-it('should correctly calculate the average of empty cells as 0',(done)=>{
-  const formula='=AVERAGE(B1:B3)';
-  const spreadsheet=new Map([
-    ['B1', ''],
-    ['B2', ''],
-    ['B3', ''],
-  ]);
-  const result=evaluateFormula(formula,spreadsheet);
-  expect(result).toBe(0);
-  done();
-});
+  it('should correctly calculate the max of a single cell',(done)=>{
+    const formula='=MAX(A2:A2)';
+    const spreadsheet=new Map([
+      ['A2', '25'],
+    ]);
+    const result=evaluateFormula(formula,spreadsheet);
+    expect(result).toBe(25);
+    done();
+  });
+
+  it('should correctly calculate the min of a single cell',(done)=>{
+    const formula='=MIN(A2:A2)';
+    const spreadsheet=new Map([
+      ['A2', '25'],
+    ]);
+    const result=evaluateFormula(formula,spreadsheet);
+    expect(result).toBe(25);
+    done();
+  });
+
+  it('should correctly calculate sum of empty cells as 0',(done)=>{
+    const formula='=SUM(A1:A3)';
+    const spreadsheet=new Map([
+      ['A1', ''],
+      ['A2', ''],
+      ['A3', ''], 
+    ]);
+    const result=evaluateFormula(formula,spreadsheet);
+    expect(result).toBe(0);
+    done();
+  });
+
+  it('should correctly calculate the average of empty cells as 0',(done)=>{
+    const formula='=AVERAGE(B1:B3)';
+    const spreadsheet=new Map([
+      ['B1', ''],
+      ['B2', ''],
+      ['B3', ''],
+    ]);
+    const result=evaluateFormula(formula,spreadsheet);
+    expect(result).toBe(0);
+    done();
+  });
+
+  it('should correctly calculate the max of empty cells as 0',(done)=>{
+    const formula='=MAX(B1:B3)';
+    const spreadsheet=new Map([
+      ['B1', ''],
+      ['B2', ''],
+      ['B3', ''],
+    ]);
+    const result=evaluateFormula(formula,spreadsheet);
+    expect(result).toBe(0);
+    done();
+  });
+
+  it('should correctly calculate the min of empty cells as 0',(done)=>{
+    const formula='=MIN(B1:B3)';
+    const spreadsheet=new Map([
+      ['B1', ''],
+      ['B2', ''],
+      ['B3', ''],
+    ]);
+    const result=evaluateFormula(formula,spreadsheet);
+    expect(result).toBe(0);
+    done();
+  });
 
 it('should correctly ignore non-numeric cells and return 0 as sum',(done)=>{
   const formula='=SUM(C1:C3)';
@@ -248,6 +302,30 @@ it('should correctly ignore non-numeric cells and return 0 as sum',(done)=>{
 
 it('should correctly ignore non-numeric cells and return 0 as average',(done)=>{
   const formula='=AVERAGE(C1:C3)';
+  const spreadsheet=new Map([
+    ['C1', 'Apple'],
+    ['C2', 'Banana'],
+    ['C3', 'Cherry'],
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(0);
+  done();
+});
+
+it('should correctly ignore non-numeric cells and return 0 as max',(done)=>{
+  const formula='=MAX(C1:C3)';
+  const spreadsheet=new Map([
+    ['C1', 'Apple'],
+    ['C2', 'Banana'],
+    ['C3', 'Cherry'],
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(0);
+  done();
+})
+
+it('should correctly ignore non-numeric cells and return 0 as min',(done)=>{
+  const formula='=MIN(C1:C3)';
   const spreadsheet=new Map([
     ['C1', 'Apple'],
     ['C2', 'Banana'],
@@ -294,6 +372,42 @@ it('should handle average with references outside the defined range',(done)=>{
   done();
 });
 
+it('should handle count with references outside the defined range',(done)=>{
+  const formula='=COUNT(A1:A4)';
+  const spreadsheet=new Map([
+    ['A1', 5],
+    ['A2', 10],
+    ['A3', 15], 
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(3);
+  done();
+});
+
+it('should handle max with references outside the defined range',(done)=>{
+  const formula='=MAX(A1:A4)';
+  const spreadsheet=new Map([
+    ['A1', 5],
+    ['A2', 10],
+    ['A3', 15], 
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(15);
+  done();
+});
+
+it('should handle min with references outside the defined range',(done)=>{
+  const formula='=MIN(A1:A4)';
+  const spreadsheet=new Map([
+    ['A1', 5],
+    ['A2', 10],
+    ['A3', 15], 
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(5);
+  done();
+});
+
 it('should correctly calculate the sum of decimal values',(done)=>{
   const formula='=SUM(D1:D3)';
   const spreadsheet=new Map([
@@ -318,6 +432,30 @@ it('should correctly calculate the average of decimal values',(done)=>{
   done();
 });
 
+it('should correctly calculate the max of decimal values',(done)=>{
+  const formula='=MAX(D1:D3)';
+  const spreadsheet=new Map([
+    ['D1', 1.5],
+    ['D2', 2.5],
+    ['D3', 3.5],
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(3.5);
+  done();
+});
+
+it('should correctly calculate the min of decimal values',(done)=>{
+  const formula='=MIN(D1:D3)';
+  const spreadsheet=new Map([
+    ['D1', 1.5],
+    ['D2', 2.5],
+    ['D3', 3.5],
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(1.5);
+  done();
+});
+
 it('should handle large range of cells efficiently in calculating sum',(done)=>{
   const formula='=SUM(A1:A100)';
   const spreadsheet=new Map();
@@ -337,6 +475,39 @@ it('should handle a large range of cells efficiently in calculating average',(do
   }
   const result=evaluateFormula(formula,spreadsheet);
   expect(result).toBe(50.5);
+  done();
+});
+
+it('should handle a large range of cells efficiently in calculating count',(done)=>{
+  const formula='=COUNT(A1:A100)';
+  const spreadsheet=new Map();
+  for (let i = 1; i <= 100; i++) {
+    spreadsheet.set(`A${i}`, i);
+  }
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(100);
+  done();
+});
+
+it('should handle a large range of cells efficiently in calculating max',(done)=>{
+  const formula='=MAX(A1:A100)';
+  const spreadsheet=new Map();
+  for (let i = 1; i <= 100; i++) {
+    spreadsheet.set(`A${i}`, i);
+  }
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(100);
+  done();
+})
+
+it('should handle a large range of cells efficiently in calculating min',(done)=>{
+  const formula='=MIN(A1:A100)';
+  const spreadsheet=new Map();
+  for (let i = 1; i <= 100; i++) {
+    spreadsheet.set(`A${i}`, i);
+  }
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(1);
   done();
 });
 
