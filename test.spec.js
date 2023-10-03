@@ -1,4 +1,5 @@
-const {readAndPrintCSV, fileExists} = require('./main');
+const { assert } = require('console');
+const {readAndPrintCSV, fileExists, evaluateFormula} = require('./main');
 const fs=require('fs');
 
 describe('Main Function',()=>{
@@ -82,5 +83,201 @@ it('should handle large files efficiently',(done)=>{
   },1000);
 });
 
+it('should correctly calculate the sum of numeric values',(done)=>{
+  const formula='=SUM(A1:A3)';
+  const spreadsheet=new Map([
+    ['A1', '5'],
+    ['A2', '10'],
+    ['A3', '15'],
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(30);
+  done();
+});
+
+it('should correctly calculate the average of numeric values',(done)=>{
+  const formula='=AVERAGE(B1:B2)';
+  const spreadsheet=new Map([
+    ['B1', '10'],
+    ['B2', '20'],
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(15);
+  done();
+});
+
+it('should correctly calculate the sum ignoring non-numeric values',(done)=>{
+  const formula='=SUM(A1:A3)';
+  const spreadsheet=new Map([
+    ['A1', '5'],
+    ['A2', 'Alice'],
+    ['A3', '10'],
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(15);
+  done();
+});
+
+it('should correctly calculate the average ignoring non-numeric values',(done)=>{
+  const formula='=AVERAGE(B1:B3)';
+  const spreadsheet=new Map([
+    ['B1', '32'],
+    ['B2', 'Bob'],
+    ['B3', '24'], 
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(28);
+  done();
+});
+
+it('should correctly calculate the sum of single cell',(done)=>{
+  const formula='=SUM(A1:A1)';
+  const spreadsheet=new Map([
+    ['A1', '42'],
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(42);
+  done();
+});
+
+it('should correctly calculate the average of a single cell',(done)=>{
+  const formula='=AVERAGE(A2:A2)';
+  const spreadsheet=new Map([
+    ['A2', '25'],
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(25);
+  done();
+});
+
+it('should correctly calculate sum of empty cells as 0',(done)=>{
+  const formula='=SUM(A1:A3)';
+  const spreadsheet=new Map([
+    ['A1', ''],
+    ['A2', ''],
+    ['A3', ''], 
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(0);
+  done();
+});
+
+it('should correctly calculate the average of empty cells as 0',(done)=>{
+  const formula='=AVERAGE(B1:B3)';
+  const spreadsheet=new Map([
+    ['B1', ''],
+    ['B2', ''],
+    ['B3', ''],
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(0);
+  done();
+});
+
+it('should correctly ignore non-numeric cells and return 0 as sum',(done)=>{
+  const formula='=SUM(C1:C3)';
+  const spreadsheet=new Map([
+    ['C1', 'Apple'],
+    ['C2', 'Banana'],
+    ['C3', 'Cherry'], 
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(0);
+  done();
+});
+
+it('should correctly ignore non-numeric cells and return 0 as average',(done)=>{
+  const formula='=AVERAGE(C1:C3)';
+  const spreadsheet=new Map([
+    ['C1', 'Apple'],
+    ['C2', 'Banana'],
+    ['C3', 'Cherry'],
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(0);
+  done();
+});
+
+it('should detect and report unsupported formulas',(done)=>{
+  const formula='=INVALID(A1:A3)';
+  const spreadsheet=new Map([
+    ['A1', '10'],
+    ['A2', '15'],
+    ['A3', '20'],
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe('Formula not supported');
+  done();
+});
+
+it('should handle sum with references outside the defined range',(done)=>{
+  const formula='=SUM(A1:A4)';
+  const spreadsheet=new Map([
+    ['A1', 5],
+    ['A2', 10],
+    ['A3', 15], 
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(30);
+  done();
+})
+
+it('should handle average with references outside the defined range',(done)=>{
+  const formula='=AVERAGE(A1:A4)';
+  const spreadsheet=new Map([
+    ['A1', 5],
+    ['A2', 10],
+    ['A3', 15], 
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(10);
+  done();
+})
+
+it('should correctly calculate the sum of decimal values',(done)=>{
+  const formula='=SUM(D1:D3)';
+  const spreadsheet=new Map([
+    ['D1', 1.5],
+    ['D2', 2.5],
+    ['D3', 3.5],
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(7.5);
+  done();
+});
+
+it('should correctly calculate the average of decimal values',(done)=>{
+  const formula='=AVERAGE(D1:D3)';
+  const spreadsheet=new Map([
+    ['D1', 1.5],
+    ['D2', 2.5],
+    ['D3', 3.5],
+  ]);
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(2.5);
+  done();
+});
+
+it('should handle large range of cells efficiently in calculating sum',(done)=>{
+  const formula='=SUM(A1:A100)';
+  const spreadsheet=new Map();
+  for (let i = 1; i <= 100; i++) {
+    spreadsheet.set(`A${i}`, i);
+  }
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(5050);
+  done();
+});
+
+it('should handle a large range of cells efficiently in calculating average',(done)=>{
+  const formula='=AVERAGE(A1:A100)';
+  const spreadsheet=new Map();
+  for (let i = 1; i <= 100; i++) {
+    spreadsheet.set(`A${i}`, i);
+  }
+  const result=evaluateFormula(formula,spreadsheet);
+  expect(result).toBe(50.5);
+  done();
+})
 
 });

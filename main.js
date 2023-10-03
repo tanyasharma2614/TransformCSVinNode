@@ -1,6 +1,8 @@
 const fs = require("fs");
 const readline = require("readline");
 
+const spreadsheet=new Map();
+
 //Function to check if file exists 
 function fileExists(filePath){
   try{
@@ -9,6 +11,68 @@ function fileExists(filePath){
   }catch(err){
     return false;
   }
+}
+
+function updateSpreadsheet(header,rows){
+  for(let i=0;i<header.length;i++){
+    for(let j=0;j<rows.length;j++){
+      const cellReference=String.fromCharCode(65+i)+(j+2);
+      spreadsheet.set(cellReference,rows[j][i]);
+    }
+  }
+}
+
+function evaluateFormula(formula,spreadsheet){
+  if(formula.startsWith('=')){
+    const [,calc,rangeStr]=formula.match(/^=([A-Z]+)\(([^)]+)\)$/);
+    const [startCellRef,endCellRef]=rangeStr.split(':');
+
+    const startColIndex=startCellRef.charCodeAt(0)-'A'.charCodeAt(0);
+    const startRowIndex=parseInt(startCellRef.slice(1))-1;
+    const endColIndex=endCellRef.charCodeAt(0)-'A'.charCodeAt(0);
+    const endRowIndex=(endCellRef.slice(1))-1;
+    switch(calc){
+      case 'SUM':
+        return evaluateSum(startColIndex,startRowIndex,endColIndex,endRowIndex,spreadsheet);
+      case 'AVERAGE':
+        return evaluateAverage(startColIndex,startRowIndex,endColIndex,endRowIndex,spreadsheet);
+      default:
+        return 'Formula not supported';
+    }
+  }
+  return 'Invalid Formula';
+}
+
+function evaluateSum(startColIndex,startRowIndex,endColIndex,endRowIndex,spreadsheet){
+  let sum=0;
+  for(let colIndex=startColIndex;colIndex<=endColIndex;colIndex++){
+    for(let rowIndex=startRowIndex;rowIndex<=endRowIndex;rowIndex++){
+      const cellReference=String.fromCharCode('A'.charCodeAt(0)+colIndex)+(rowIndex+1);
+      const cellValue=spreadsheet.get(cellReference);
+      if(cellValue!==undefined && !isNaN(parseFloat(cellValue))){
+        sum+=parseFloat(cellValue);
+      }
+    }
+  }
+  return sum;
+}
+
+function evaluateAverage(startColIndex,startRowIndex,endColIndex,endRowIndex,spreadsheet){
+  let sum=0;
+  let count=0;
+  for(let colIndex=startColIndex;colIndex<=endColIndex;colIndex++){
+    for(let rowIndex=startRowIndex;rowIndex<=endRowIndex;rowIndex++){
+      const cellReference=String.fromCharCode('A'.charCodeAt(0)+colIndex)+(rowIndex+1);
+      const cellValue=spreadsheet.get(cellReference);
+      if(cellValue!==undefined && !isNaN(parseFloat(cellValue))){
+        sum+=parseFloat(cellValue);
+        count++;
+      }
+    }
+  }
+  if(count===0)
+    return 0;
+  return sum/count;
 }
 
 // Main Function to read and print the CSV file
@@ -42,6 +106,7 @@ function readAndPrintCSV(fileName) {
       }
 
       rows.push(values);
+      updateSpreadsheet(header,rows);
     }
   });
 
@@ -72,6 +137,11 @@ function readAndPrintCSV(fileName) {
         );
       }
 
+      // // Print the spreadsheet data for debugging
+      // console.log("Spreadsheet Data:");
+      // for (const [cellReference, value] of spreadsheet.entries()) {
+      //   console.log(`${cellReference}: ${value}`);
+      // }
       // Wait for user input to enter a formula
       const input = readline.createInterface({
         input: process.stdin,
@@ -79,7 +149,9 @@ function readAndPrintCSV(fileName) {
       });
 
       input.question("Enter a formula: ", (formula) => {
+        const result=evaluateFormula(formula,spreadsheet);
         console.log(`You entered: ${formula}`);
+        console.log(`Result:${result}`);
 
         input.close();
       });
@@ -102,5 +174,6 @@ main();
 
 module.exports = {
   readAndPrintCSV,
-  fileExists
+  fileExists,
+  evaluateFormula
 };
